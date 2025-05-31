@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio pour {{ player_name }}</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .dashboard {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .dashboard-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .audio-controls {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .player-card {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            margin: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .volume-slider {
+            flex-grow: 1;
+            margin: 0 15px;
+        }
+        .distance-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            align-self: flex-start;
+        }
+        #main-audio {
+            width: 100%;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <h1>🎮 {{ player_name }}</h1>
+            <p>Tableau de contrôle audio</p>
+        </div>
+        
+        <div class="audio-controls">
+            <audio id="main-audio" controls autoplay></audio>
+            <div class="volume-control">
+                <span>🔊 Volume global :</span>
+                <input type="range" class="volume-slider" id="global-volume" min="0" max="100" value="80">
+                <span id="global-volume-value">80%</span>
+            </div>
+        </div>
+        
+        <div class="players-section">
+            <h3 style="padding: 0 20px;">👥 Joueurs connectés :</h3>
+            
+            {% for player in other_players %}
+            <div class="player-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <h4>🎤 {{ player }}</h4>
+                    <span class="distance-badge" id="distance-{{ player }}">?m</span>
+                </div>
+                <div class="volume-control">
+                    <span>Volume :</span>
+                    <input type="range" class="volume-slider player-volume" 
+                           data-player="{{ player }}" min="0" max="100" value="50">
+                    <span class="volume-value">50%</span>
+                </div>
+            </div>
+            {% else %}
+            <div style="padding: 20px; text-align: center; color: #7f8c8d;">
+                Aucun autre joueur connecté
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Configuration initiale
+        const playerName = "{{ player_name }}";
+        const audioElement = document.getElementById('main-audio');
+        
+        // Mise à jour automatique de l'audio
+        function updateAudio() {
+            audioElement.src = `/get_audio/${playerName}?t=${Date.now()}`;
+            
+            // Actualiser les positions
+            fetch('/get_positions')
+                .then(r => r.json())
+                .then(players => {
+                    players.forEach(p => {
+                        const distElement = document.getElementById(`distance-${p.name}`);
+                        if (distElement) {
+                            const dist = Math.round(Math.sqrt(
+                                p.position[0]**2 + p.position[1]**2 + p.position[2]**2
+                            ));
+                            distElement.textContent = `${dist}m`;
+                        }
+                    });
+                });
+        }
+        
+        // Gestion des volumes
+        document.querySelectorAll('.player-volume').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const targetPlayer = this.dataset.player;
+                const volume = this.value;
+                this.nextElementSibling.textContent = `${volume}%`;
+                
+                fetch('/set_volume', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        listener: playerName,
+                        speaker: targetPlayer,
+                        volume: volume / 100
+                    })
+                });
+            });
+        });
+        
+        // Volume global
+        document.getElementById('global-volume').addEventListener('input', function() {
+            document.getElementById('global-volume-value').textContent = `${this.value}%`;
+            audioElement.volume = this.value / 100;
+        });
+        
+        // Démarrer les mises à jour
+        updateAudio();
+        setInterval(updateAudio, 500);
+        audioElement.volume = 0.8;
+    </script>
+</body>
+</html>
