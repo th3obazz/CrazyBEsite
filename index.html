@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>CACABEF - Proximity Audio</title>
+    <title>CACABEF – Proximity Audio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; }
@@ -17,16 +17,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎧 Proximity Audio - Joueurs connectés</h1>
+        <h1>🎧 Proximity Audio – Joueurs connectés</h1>
         <ul id="player-list">
-            <!-- Liste des joueurs générée dynamiquement -->
+            <li>Chargement…</li>
         </ul>
         <div class="footer">
             CACABEF &copy; 2025 – Interface audio de proximité Minecraft/Discord
         </div>
     </div>
     <script>
-        // Exemple : récupération dynamique (adapte selon ton backend)
+        // Récupère la liste des joueurs depuis player_positions.json (chemin relatif !)
         fetch('player_positions.json')
             .then(res => res.json())
             .then(data => {
