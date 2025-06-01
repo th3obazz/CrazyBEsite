@@ -1,68 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Système Audio Minecraft</title>
+    <meta charset="UTF-8">
+    <title>CACABEF - Proximity Audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px;
-            border-radius: 8px 8px 0 0;
-            text-align: center;
-        }
-        .player-list {
-            background: white;
-            padding: 20px;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .player-btn {
-            display: block;
-            padding: 12px;
-            margin: 10px 0;
-            background: #3498db;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .player-btn:hover {
-            background: #2980b9;
-        }
-        .no-players {
-            color: #7f8c8d;
-            text-align: center;
-            padding: 20px;
-        }
+        body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; }
+        .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0002; padding: 32px; }
+        h1 { color: #1976d2; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 16px 0; }
+        a { color: #1976d2; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .footer { margin-top: 40px; color: #888; font-size: 0.9em; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🕹️ Système Audio Minecraft</h1>
-        <p>Connecté au serveur vocal</p>
+    <div class="container">
+        <h1>🎧 Proximity Audio - Joueurs connectés</h1>
+        <ul id="player-list">
+            <!-- Liste des joueurs générée dynamiquement -->
+        </ul>
+        <div class="footer">
+            CACABEF &copy; 2025 – Interface audio de proximité Minecraft/Discord
+        </div>
     </div>
-    
-    <div class="player-list">
-        <h2>🔊 Sélectionnez votre pseudo :</h2>
-        
-        {% for player in players %}
-            <a href="/player/{{ player }}" class="player-btn">
-                👤 {{ player }}
-            </a>
-        {% else %}
-            <div class="no-players">
-                <p>Aucun joueur connecté actuellement.</p>
-                <p>Rejoignez le vocal Discord d'abord !</p>
-            </div>
-        {% endfor %}
-    </div>
+    <script>
+        // Exemple : récupération dynamique (adapte selon ton backend)
+        fetch('player_positions.json')
+            .then(res => res.json())
+            .then(data => {
+                const ul = document.getElementById('player-list');
+                const joueurs = Object.keys(data);
+                if (joueurs.length === 0) {
+                    ul.innerHTML = "<li>Aucun joueur connecté.</li>";
+                } else {
+                    ul.innerHTML = joueurs.map(nom =>
+                        `<li><a href="player.html?pseudo=${encodeURIComponent(nom)}">${nom}</a></li>`
+                    ).join('');
+                }
+            })
+            .catch(() => {
+                document.getElementById('player-list').innerHTML = "<li>Impossible de charger la liste des joueurs.</li>";
+            });
+    </script>
 </body>
 </html>
